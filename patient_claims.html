@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Claims</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #7c3aed;
+            --bg: #eef4ff;
+            --bg-soft: #f8fbff;
+            --card: rgba(255, 255, 255, 0.88);
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: rgba(226, 232, 240, 0.9);
+            --shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+            --radius: 22px;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 30%),
+                radial-gradient(circle at top right, rgba(124, 58, 237, 0.10), transparent 28%),
+                linear-gradient(135deg, #eef4ff, #f7f9fc 45%, #eef2ff);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 32px 24px 40px;
+        }
+
+        .page-header {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 28px;
+            padding: 30px 28px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(124, 58, 237, 0.92));
+            color: #fff;
+            box-shadow: 0 18px 45px rgba(37, 99, 235, 0.25);
+        }
+
+        .page-header::before,
+        .page-header::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.10);
+        }
+
+        .page-header::before {
+            width: 180px;
+            height: 180px;
+            top: -70px;
+            right: -50px;
+        }
+
+        .page-header::after {
+            width: 120px;
+            height: 120px;
+            bottom: -40px;
+            left: -30px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 36px;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header p {
+            margin: 0;
+            max-width: 760px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.92);
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card,
+        .assessment-card,
+        .table-card,
+        .history-card {
+            background: var(--card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .card {
+            padding: 24px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .card:hover,
+        .assessment-card:hover,
+        .table-card:hover,
+        .history-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 52px rgba(15, 23, 42, 0.12);
+        }
+
+        .card h2,
+        .table-card h2,
+        .assessment-title h2,
+        .history-card h2 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            color: #1e3a8a;
+        }
+
+        .card-subtext {
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        input,
+        button {
+            width: 100%;
+            font-size: 14px;
+            border-radius: 14px;
+        }
+
+        input {
+            padding: 13px 14px;
+            border: 1px solid #dbe2ea;
+            background: #fff;
+            color: var(--text);
+            transition: all 0.25s ease;
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+            transform: translateY(-1px);
+        }
+
+        button {
+            padding: 13px 16px;
+            border: none;
+            cursor: pointer;
+            margin-top: 6px;
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.20);
+            transition: all 0.25s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 25px rgba(124, 58, 237, 0.22);
+            background: linear-gradient(135deg, var(--primary-dark), #6d28d9);
+        }
+
+        .assessment-card {
+            padding: 28px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.95));
+        }
+
+        .assessment-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .assessment-title p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .pill {
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pill::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.9;
+        }
+
+        .pill-low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pill-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .pill-high {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 22px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .score-box {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #fff;
+            border-radius: 22px;
+            padding: 22px 18px;
+            text-align: center;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.22);
+        }
+
+        .score-box .num {
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .score-box .txt {
+            font-size: 13px;
+            margin-top: 7px;
+            color: #cbd5e1;
+            letter-spacing: 0.3px;
+        }
+
+        .range-wrap {
+            width: 100%;
+        }
+
+        .range-track {
+            height: 18px;
+            border-radius: 999px;
+            overflow: hidden;
+            display: flex;
+            background: #e5e7eb;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.08);
+            animation: fadeInTrack 0.6s ease;
+        }
+
+        .range-low {
+            width: 33.33%;
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+        }
+
+        .range-medium {
+            width: 33.33%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .range-high {
+            width: 33.33%;
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .range-wrap {
+            width: 100%;
+            position: relative;
+            padding-top: 8px;
+        }
+
+        .range-marker {
+            position: absolute;
+            top: 50%;
+
+            left: calc({
+                    {
+                    risk_score|default(0)
+                }
+            }
+
+            % - 10px);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+        transform: translateY(-50%);
+        z-index: 5;
+        transition: left 0.6s ease;
+
+        background: {
+            % if risk_level=="Low" %
+        }
+
+        #22c55e {
+            % elif risk_level=="Medium" %
+        }
+
+        #f59e0b {
+            % else %
+        }
+
+        #ef4444 {
+            % endif %
+        }
+
+        ;
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #475569;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        @keyframes fadeInTrack {
+            from {
+                opacity: 0;
+                transform: scaleX(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: scaleX(1);
+            }
+        }
+
+        @keyframes pulseDot {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 22px;
+        }
+
+        .detail-box,
+        .metric-box,
+        .message-box {
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .detail-box {
+            padding: 18px;
+            transition: all 0.25s ease;
+        }
+
+        .detail-box:hover,
+        .metric-box:hover,
+        .message-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+        }
+
+        .detail-box .label,
+        .metric-box .label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .detail-box .value,
+        .metric-box .value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .ai-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .metric-box {
+            padding: 18px;
+            background: linear-gradient(135deg, #eff6ff, #f8fafc);
+        }
+
+        .message-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .message-box {
+            padding: 18px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-color: #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        .recommend-box {
+            background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+            border-color: #ddd6fe;
+            color: #5b21b6;
+        }
+
+        .history-card {
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .history-title {
+            margin-bottom: 16px;
+        }
+
+        .history-title h2 {
+            margin: 0;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 18px;
+            border: 1px solid #e5e7eb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 900px;
+            background: #fff;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            color: #1e3a8a;
+            position: sticky;
+            top: 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: #fcfdff;
+        }
+
+        tr:hover td {
+            background: #f3f7ff;
+        }
+
+        .empty-state {
+            color: var(--muted);
+            padding: 18px;
+            line-height: 1.6;
+            font-size: 15px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f8fbff, #ffffff);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 26px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.2px;
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .home-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 18px 30px rgba(124, 58, 237, 0.28);
+            background: linear-gradient(135deg, var(--primary-dark), #6d28d9);
+        }
+
+        .home-btn:active {
+            transform: translateY(0);
+        }
+
+        .home-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        @media (max-width: 1100px) {
+
+            .top-grid,
+            .detail-grid,
+            .ai-metrics,
+            .message-grid,
+            .score-row {
+                grid-template-columns: 1fr;
+            }
+
+            .score-box {
+                max-width: 220px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 18px 14px 30px;
+            }
+
+            .page-header {
+                padding: 24px 18px;
+                border-radius: 22px;
+            }
+
+            .page-header h1 {
+                font-size: 28px;
+            }
+
+            .page-header p {
+                font-size: 14px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card,
+            .assessment-card,
+            .history-card {
+                border-radius: 18px;
+                padding: 18px;
+            }
+
+            .score-box {
+                max-width: 100%;
+            }
+
+            .range-labels {
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                padding: 12px 13px;
+                font-size: 13px;
+            }
+
+            .home-btn {
+                width: 100%;
+                max-width: 320px;
+                padding: 13px 18px;
+                font-size: 14px;
+            }
+
+            .home-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header h1 {
+                font-size: 24px;
+            }
+
+            .assessment-top {
+                align-items: flex-start;
+            }
+
+            .pill {
+                font-size: 12px;
+                padding: 9px 14px;
+            }
+
+            .score-box .num {
+                font-size: 32px;
+            }
+
+            .detail-box .value,
+            .metric-box .value {
+                font-size: 16px;
+            }
+
+            .home-btn {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Claim Information Portal</h1>
+            <p>Search patient history and generate claim assessment with automated risk insights and next-step
+                recommendations.</p>
+        </div>
+
+        <div class="top-grid">
+            <div class="card">
+                <h2>Search Patient Claims</h2>
+                <p class="card-subtext">Find the full claim history for a patient from the truth file using the Patient
+                    ID.</p>
+                <form method="POST" action="/patient-claims">
+                    <input type="hidden" name="form_type" value="search_patient">
+                    <div class="grid">
+                        <div class="field">
+                            <label>Patient ID</label>
+                            <input type="text" name="patient_id" placeholder="Enter Patient ID" required>
+                        </div>
+                        <div class="field">
+                            <label>&nbsp;</label>
+                            <button type="submit">Search Patient</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Generate Risk Assessment</h2>
+                <p class="card-subtext">Run a model-based prediction using current claim values to estimate risk and
+                    outcome.</p>
+                <form method="POST" action="/patient-claims">
+                    <input type="hidden" name="form_type" value="predict_claim">
+                    <div class="grid">
+                        <div class="field">
+                            <label>Patient ID</label>
+                            <input type="text" name="patient_id" placeholder="Optional Patient ID">
+                        </div>
+                        <div class="field">
+                            <label>Allowed Amount</label>
+                            <input type="number" step="0.01" name="allowed_amount" placeholder="Allowed Amount"
+                                required>
+                        </div>
+                        <div class="field">
+                            <label>Prior Used Amount</label>
+                            <input type="number" step="0.01" name="prior_used_amount" placeholder="Prior Used Amount"
+                                required>
+                        </div>
+                        <div class="field">
+                            <label>&nbsp;</label>
+                            <button type="submit">Run Risk Predictor</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if prediction %}
+        <div class="assessment-card">
+            <div class="assessment-top">
+                <div class="assessment-title">
+                    <h2>Risk Assessment Prediction</h2>
+                    <p>AI-assisted evaluation based on current claim values and model probability scoring.</p>
+                </div>
+
+                {% if risk_level == "Low" %}
+                <span class="pill pill-low">Low Risk</span>
+                {% elif risk_level == "Medium" %}
+                <span class="pill pill-medium">Medium Risk</span>
+                {% else %}
+                <span class="pill pill-high">High Risk</span>
+                {% endif %}
+            </div>
+
+            <div class="score-row">
+                <div class="score-box">
+                    <div class="num">{{ risk_score }}%</div>
+                    <div class="txt">Risk Score</div>
+                </div>
+
+                <div class="range-wrap">
+                    <div class="range-track">
+                        <div class="range-low"></div>
+                        <div class="range-medium"></div>
+                        <div class="range-high"></div>
+                        <div class="range-marker"></div>
+                    </div>
+                    
+                    <div class="range-labels">
+                        <span>Low Risk</span>
+                        <span>Medium Risk</span>
+                        <span>High Risk</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-box">
+                    <div class="label">Predicted Outcome</div>
+                    <div class="value">{{ prediction }}</div>
+                </div>
+
+                <div class="detail-box">
+                    <div class="label">Allowed Amount</div>
+                    <div class="value">${{ assessment_data.allowed_amount }}</div>
+                </div>
+
+                <div class="detail-box">
+                    <div class="label">Prior Used Amount</div>
+                    <div class="value">${{ assessment_data.prior_used_amount }}</div>
+                </div>
+
+                <div class="detail-box">
+                    <div class="label">Patient ID</div>
+                    <div class="value">{{ patient_id if patient_id else "N/A" }}</div>
+                </div>
+            </div>
+
+            <div class="ai-metrics">
+                <div class="metric-box">
+                    <div class="label">Confidence Score</div>
+                    <div class="value">{{ confidence_score }}%</div>
+                </div>
+            </div>
+
+            <div class="message-grid">
+                <div class="message-box alert-box">
+                    <strong>Insight</strong><br>
+                    {{ alert_message }}
+                </div>
+
+                <div class="message-box recommend-box">
+                    <strong>⚠ Alerts and Recommendations</strong><br>
+                    {{ recommendation }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if form_type == "search_patient" %}
+        <div class="history-card">
+            <div class="history-title">
+                <h2>Patient Claim Results</h2>
+            </div>
+
+            {% if patient_records %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in patient_records[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in patient_records %}
+                        <tr>
+                            {% for value in row.values() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                No patient history available.
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="action-bar">
+            <a href="/" class="home-btn">
+                <span class="home-icon">←</span>
+                <span>Back to Home</span>
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>
